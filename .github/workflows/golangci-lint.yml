@@ -1,0 +1,17 @@
+name: golangci-lint
+on: push
+
+jobs:
+  # Runs a golangci container for each go.mod file in the repo
+  golangci:
+    name: "golangci-lint"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-go@v3
+      - uses: actions/checkout@v3
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: latest
+          working-directory: "./"
+          args: --timeout=10m
