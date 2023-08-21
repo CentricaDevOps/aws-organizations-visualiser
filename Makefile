@@ -18,7 +18,7 @@ test-integration:
 
 lint-check:
 	@echo "Linting..."
-	@go vet ./...
+	@go fmt ./... | wc -l | grep 0 > /dev/null || (echo "Please run 'make lint-fix' to fix linting errors" && exit 1)
 
 lint-fix:
 	@echo "Linting and fixing..."
