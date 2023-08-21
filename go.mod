@@ -3,6 +3,7 @@ module github.com/CentricaDevOps/aws-organizations-visualiser
 go 1.20
 
 require (
+	github.com/aws/aws-sdk-go v1.44.327
 	github.com/aws/aws-sdk-go-v2 v1.20.2
 	github.com/aws/aws-sdk-go-v2/config v1.18.34
 	github.com/aws/aws-sdk-go-v2/service/organizations v1.20.3

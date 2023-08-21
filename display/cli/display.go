@@ -12,6 +12,9 @@ import (
 // Display is a function that takes in the tree structure and displays it in a
 // visually appealing way in the CLI.
 func Display(tree *generation.OU) {
+	// TODO: use flags to determine whether to display detailed output or not
+	// TODO: have different display options (e.g. tree, list, etc.)
+	// TODO: Include Accounts in the display if requested
 	detailed := true
 	displayTree(tree, detailed)
 }

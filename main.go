@@ -74,7 +74,7 @@ func checkPermissions() (context.Context, *organizations.Client, error) {
 // main is the entry point of the application, it is called when the application
 // is executed and is used to call the main logic of the application.
 func main() {
-	// STAGE 0: Set up the logging and check permissions
+	// STAGE 1: Set up the logging and check permissions
 	setupLogging()
 	ctx, cfg, err := checkPermissions()
 	if err != nil {
@@ -83,10 +83,10 @@ func main() {
 		return
 	}
 
-	// STAGE 1: Sort out the input flags
+	// STAGE 2: Sort out the input flags
 	// TODO: Decide on what flags to use and sort them out
 
-	// STAGE 2: Run the main logic of the application to generate the data
+	// STAGE 3: Run the main logic of the application to generate the data
 	// structure
 	context.Background()
 	tree, err := generation.GenerateStructure(ctx, cfg)
@@ -96,7 +96,6 @@ func main() {
 		return
 	}
 
-	// STAGE 3: Determine the output format and output the data structure
-	// TODO: Implement the output logic of the application
+	// STAGE 4: Determine the output format and output the data structure
 	cli.Display(tree)
 }

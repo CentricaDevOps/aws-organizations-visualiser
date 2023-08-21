@@ -7,6 +7,8 @@ import (
 	"github.com/CentricaDevOps/aws-organizations-visualiser/generation"
 )
 
+// tree is a struct that holds the information needed to display the tree in the
+// CLI. It is used with the setupTreeRecursive and printTreeRecursive functions.
 type tree struct {
 	referencedNode *generation.OU
 	prefix         string
@@ -39,8 +41,18 @@ var (
 	endForkChild = "└─┬─" + wordSpacer
 )
 
+// setupTreeRecursive is a recursive function that sets up the tree struct with
+// the correct information for displaying the tree in the CLI.
+// This is done by determining the prefix, spaces and children of each Node.
+//
+// This is helpful as the output is {spaces[...]}{prefix}{name} therefore a
+// large portion of this function is determining how many spaces to add and
+// what the prefix should be.
+//
+// For example, if a node is the last child of its parent, it should have the
+// endFork prefix. If it is not the last child, it should have the fork prefix.
 func setupTreeRecursive(parentTree tree) tree {
-	// If there are no children, return true
+	// Base case
 	if len(parentTree.referencedNode.Children) == 0 {
 		return tree{}
 	}
@@ -51,24 +63,23 @@ func setupTreeRecursive(parentTree tree) tree {
 		spaceToAppend = emptySpacer
 	}
 
-	// If its gotten here, the parent has children therefore needs to change its
-	// prefix to a fork with a child
+	// Change the prefix to the correct one as it has children
 	if parentTree.prefix == fork {
 		parentTree.prefix = forkChild
 	} else if parentTree.prefix == endFork {
 		parentTree.prefix = endForkChild
 	}
 
+	// For each child, add it to the children slice
 	for _, child := range parentTree.referencedNode.Children {
-		childDisplay := tree{
-			referencedNode: child,
-			prefix:         fork,
-			spaces:         append(parentTree.spaces, spaceToAppend),
-			children:       []tree{},
-		}
 		parentTree.children = append(
 			parentTree.children,
-			childDisplay,
+			tree{
+				referencedNode: child,
+				prefix:         fork,
+				spaces:         append(parentTree.spaces, spaceToAppend),
+				children:       []tree{},
+			},
 		)
 	}
 
@@ -86,6 +97,9 @@ func setupTreeRecursive(parentTree tree) tree {
 	return parentTree
 }
 
+// printTreeRecursive is a recursive function that prints the tree of OUs in the
+// CLI using the information from the tree struct. The detailed bool is used to
+// determine whether to print the number of accounts in each OU.
 func printTreeRecursive(display tree, detailed bool) {
 	info := ""
 	if detailed {
@@ -105,6 +119,22 @@ func printTreeRecursive(display tree, detailed bool) {
 	}
 }
 
+/*
+	 displayTree is a function that displays the tree of OUs in the CLI using a
+	 tree structure similar to the one below:
+	 └─┬─ TestOU (2)
+	   ├─┬─ TestOU2 (5)
+	   │ └─── TestOU3 (2)
+	   └─┬─ TestOU4 (12)
+		 └─── TestOU5 (2)
+
+	 or without the detailed output:
+	 └─┬─ TestOU
+	   ├─┬─ TestOU2
+	   │ └─── TestOU3
+	   └─┬─ TestOU4
+	     └─── TestOU5
+*/
 func displayTree(ouTree *generation.OU, detailed bool) {
 	parentDisplay := tree{
 		referencedNode: ouTree,
