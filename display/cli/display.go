@@ -6,13 +6,12 @@
 package cli
 
 import (
-	"fmt"
-
 	"github.com/CentricaDevOps/aws-organizations-visualiser/generation"
 )
 
 // Display is a function that takes in the tree structure and displays it in a
 // visually appealing way in the CLI.
 func Display(tree *generation.OU) {
-	fmt.Println("Displaying tree structure...")
+	detailed := true
+	displayTree(tree, detailed)
 }
