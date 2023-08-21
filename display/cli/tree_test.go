@@ -331,7 +331,10 @@ func captureOutput(f func()) string {
 
 	// Read the output from the pipe.
 	var buf bytes.Buffer
-	io.Copy(&buf, r)
+	_, err := io.Copy(&buf, r)
+	if err != nil {
+		panic(err)
+	}
 	// Return the output.
 	return buf.String()
 }
