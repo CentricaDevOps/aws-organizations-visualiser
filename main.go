@@ -1,18 +1,40 @@
-/*
-# AWS Organizations Visualiser
-
-TODO: Add description
-*/
+// # AWS Organizations Visualiser
+//
+// This is a tool that can be used to visualise the structure of an AWS
+// Organizations structure. It can be used to generate a JSON representation of the
+// structure or to display the structure in the CLI.
+//
+// ## Usage
+//
+// This tool generates a structure that represents the AWS Organizations structure
+// and then, based on the flags passed in, either displays the structure in the CLI
+// or outputs the structure to a JSON file or both.
+//
+// ### Flags
+//
+// Usage:
+//
+//	aws-organizations-visualiser [flags]
+//
+// Flags:
+//
+//	-include-json
+//	      Include the JSON representation of the AWS Organizations structure in the output (default true)
+//	-include-visual
+//	      Include the visual representation of the AWS Organizations structure in the output (default true)
+//	-o string
+//	      The output file for the JSON representation of the AWS Organizations structure (default "output.json")
 package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"os"
-
-	"log"
+	"strconv"
 
 	"github.com/CentricaDevOps/aws-organizations-visualiser/display/cli"
+	"github.com/CentricaDevOps/aws-organizations-visualiser/display/json"
 	"github.com/CentricaDevOps/aws-organizations-visualiser/generation"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/organizations"
@@ -27,7 +49,7 @@ type Logs struct {
 // for the application
 func (l *Logs) Println(v ...interface{}) {
 	if l.Enabled {
-		log.Println(v...)
+		fmt.Println(v...)
 	}
 }
 
@@ -37,14 +59,13 @@ var logs Logs
 
 // init is called before main and is used to check the permissions of the user
 // running the application and to set up the logging configuration
-func setupLogging() {
+func setupLogging(logging string) {
 	// Set up logging
-	logs := Logs{Enabled: false}
-	ll := os.Getenv("LOGS_ENABLED")
-	if ll == "true" {
-		logs.Enabled = true
-		logs.Println("Logging initialised")
+	value, err := strconv.ParseBool(logging)
+	if err != nil {
+		value = false
 	}
+	logs = Logs{Enabled: value}
 }
 
 // checkPermissions is a function that checks the permissions of the user running
@@ -74,17 +95,22 @@ func checkPermissions() (context.Context, *organizations.Client, error) {
 // main is the entry point of the application, it is called when the application
 // is executed and is used to call the main logic of the application.
 func main() {
-	// STAGE 1: Set up the logging and check permissions
-	setupLogging()
+	// STAGE 1: Sort out the input flags
+	jsonPtr := flag.Bool("include-json", true, "Include the JSON representation of the AWS Organizations structure in the output")
+	visualPtr := flag.Bool("include-visual", true, "Include the visual representation of the AWS Organizations structure in the output")
+	outputPtr := flag.String("o", "output.json", "The output file for the JSON representation of the AWS Organizations structure")
+	flag.Parse()
+
+	// STAGE 2: Set up the logging and check permissions
+	ll := os.Getenv("LOGS_ENABLED")
+	setupLogging(ll)
 	ctx, cfg, err := checkPermissions()
 	if err != nil {
 		fmt.Println("Error checking permissions")
 		logs.Println(err)
 		return
 	}
-
-	// STAGE 2: Sort out the input flags
-	// TODO: Decide on what flags to use and sort them out
+	logs.Println("Output file:", *outputPtr)
 
 	// STAGE 3: Run the main logic of the application to generate the data
 	// structure
@@ -97,5 +123,31 @@ func main() {
 	}
 
 	// STAGE 4: Determine the output format and output the data structure
-	cli.Display(tree)
+	// If no output format is specified, exit
+	if !*visualPtr && !*jsonPtr {
+		fmt.Println("No output format specified, exiting...")
+		return
+	}
+	// If the visual output format is specified, display the data structure on
+	// the CLI
+	if *visualPtr {
+		cli.Display(tree)
+	}
+
+	// If the JSON output format is specified, output the data structure to a
+	// JSON file with the given name
+	if *jsonPtr {
+		jsonTree, err := json.Create(tree)
+		if err != nil {
+			fmt.Println("Error generating JSON")
+			logs.Println(err)
+			return
+		}
+		err = json.OutputToFile(jsonTree, *outputPtr)
+		if err != nil {
+			fmt.Println("Error outputting JSON to file")
+			logs.Println(err)
+			return
+		}
+	}
 }
