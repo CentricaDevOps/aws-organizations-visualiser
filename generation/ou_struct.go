@@ -2,6 +2,7 @@ package generation
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/aws/aws-sdk-go-v2/service/organizations"
 	"github.com/aws/aws-sdk-go-v2/service/organizations/types"
@@ -12,10 +13,10 @@ import (
 // It can be used to represent the entire structure or a substructure in the
 // style of a tree.
 type OU struct {
-	Id       string
-	Name     string
-	Children []*OU
-	Accounts []types.Account
+	Id       string          `json:"id"`
+	Name     string          `json:"name"`
+	Children []*OU           `json:"children"`
+	Accounts []types.Account `json:"accounts"`
 }
 
 // addChildren adds the given OUs to the OU's children slice.
@@ -41,6 +42,11 @@ func (o *OU) GetName() string {
 // GetAccounts returns a list of the accounts in the OU.
 func (o *OU) GetAccounts() []types.Account {
 	return o.Accounts
+}
+
+// ToJSON returns a JSON representation of the OU.
+func (o *OU) ToJSON() ([]byte, error) {
+	return json.MarshalIndent(o, "", "  ")
 }
 
 func (parent *OU) fillOuTree(ctx context.Context, api ListOrganizationalUnitsForParent) error {
