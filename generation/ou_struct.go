@@ -93,3 +93,20 @@ func (parent *OU) fillAccountsRecursive(ctx context.Context, api *organizations.
 
 	return parent, nil
 }
+
+// removeSuspendedAccounts removes all suspended accounts from the OU tree.
+func (parent *OU) RemoveSuspendedAccounts() *OU {
+	accounts := make([]types.Account, 0)
+	for _, account := range parent.Accounts {
+		if account.Status != types.AccountStatusSuspended {
+			accounts = append(accounts, account)
+		}
+	}
+	parent.Accounts = accounts
+
+	for i := range parent.Children {
+		parent.Children[i] = parent.Children[i].RemoveSuspendedAccounts()
+	}
+
+	return parent
+}

@@ -18,12 +18,14 @@
 //
 // Flags:
 //
-//	-include-json
-//	      Include the JSON representation of the AWS Organizations structure in the output (default true)
-//	-include-visual
-//	      Include the visual representation of the AWS Organizations structure in the output (default true)
-//	-o string
-//	      The output file for the JSON representation of the AWS Organizations structure (default "output.json")
+//	    -remove-suspended-accounts
+//		      Remove suspended accounts from the output (default false)
+//		-include-json
+//		      Include the JSON representation of the AWS Organizations structure in the output (default true)
+//		-include-visual
+//		      Include the visual representation of the AWS Organizations structure in the output (default true)
+//		-o string
+//		      The output file for the JSON representation of the AWS Organizations structure (default "output.json")
 package main
 
 import (
@@ -96,6 +98,7 @@ func checkPermissions() (context.Context, *organizations.Client, error) {
 // is executed and is used to call the main logic of the application.
 func main() {
 	// STAGE 1: Sort out the input flags
+	removeSuspendedAccountsPtr := flag.Bool("remove-suspended-accounts", false, "Remove suspended accounts from the output")
 	jsonPtr := flag.Bool("include-json", true, "Include the JSON representation of the AWS Organizations structure in the output")
 	visualPtr := flag.Bool("include-visual", true, "Include the visual representation of the AWS Organizations structure in the output")
 	outputPtr := flag.String("o", "output.json", "The output file for the JSON representation of the AWS Organizations structure")
@@ -114,12 +117,14 @@ func main() {
 
 	// STAGE 3: Run the main logic of the application to generate the data
 	// structure
-	context.Background()
 	tree, err := generation.GenerateStructure(ctx, cfg)
 	if err != nil {
 		fmt.Println("Error generating structure")
 		logs.Println(err)
 		return
+	}
+	if *removeSuspendedAccountsPtr {
+		tree = tree.RemoveSuspendedAccounts()
 	}
 
 	// STAGE 4: Determine the output format and output the data structure

@@ -133,3 +133,34 @@ func TestOuFillOuTree(t *testing.T) {
 	require.Equal(t, "ou-5678", ou.Children[0].Id, "OU children was not set correctly")
 	require.Equal(t, "TestChildOU", ou.Children[0].Name, "OU children was not set correctly")
 }
+
+// TestRemoveSuspendedAccounts tests the removeSuspendedAccounts method of the OU struct.
+func TestRemoveSuspendedAccounts(t *testing.T) {
+	// Create an OU struct.
+	ou := &OU{
+		Id:   "ou-1234",
+		Name: "TestOU",
+	}
+
+	// Create a list of accounts.
+	accounts := []types.Account{
+		{
+			Id:     aws.String("123456789"),
+			Status: types.AccountStatusActive,
+		},
+		{
+			Id:     aws.String("987654321"),
+			Status: types.AccountStatusSuspended,
+		},
+	}
+
+	// Add the accounts to the OU.
+	ou.Accounts = accounts
+
+	// Remove the suspended accounts.
+	ou = ou.RemoveSuspendedAccounts()
+
+	// Check that the correct accounts were removed.
+	require.Len(t, ou.Accounts, 1, "removeSuspendedAccounts did not remove the correct accounts")
+	require.Equal(t, "123456789", *ou.Accounts[0].Id, "removeSuspendedAccounts did not remove the correct accounts")
+}
