@@ -47,5 +47,8 @@ func GenerateStructure(ctx context.Context, orgClient *organizations.Client) (*O
 		return nil, err
 	}
 
+	// Remove suspended accounts
+	tree = tree.removeSuspendedAccounts()
+
 	return tree, nil
 }
