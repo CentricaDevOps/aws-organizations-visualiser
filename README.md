@@ -70,6 +70,8 @@ Usage:
 
 Flags:
 
+    -remove-suspended-accounts
+		Remove suspended accounts from the output (default false)
     -include-json
         Include the JSON representation of the AWS Organizations structure in the output (default true)
     -include-visual

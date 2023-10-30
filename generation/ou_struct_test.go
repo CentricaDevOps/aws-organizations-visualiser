@@ -158,7 +158,7 @@ func TestRemoveSuspendedAccounts(t *testing.T) {
 	ou.Accounts = accounts
 
 	// Remove the suspended accounts.
-	ou = ou.removeSuspendedAccounts()
+	ou = ou.RemoveSuspendedAccounts()
 
 	// Check that the correct accounts were removed.
 	require.Len(t, ou.Accounts, 1, "removeSuspendedAccounts did not remove the correct accounts")
